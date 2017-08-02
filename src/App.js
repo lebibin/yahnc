@@ -115,27 +115,52 @@ class Table extends Component {
         <tbody>
           { list.filter(isSearched(pattern)).map( item => {
             return (
-              <tr key={item.objectID}>
-                <td>
-                  <a href={item.url}>{item.title}</a>
-                </td>
-                <td>{item.author}</td>
-                <td>{item.num_comments}</td>
-                <td>{item.points}</td>
-                <td>
-                  <button
-                    onClick={ () => onDismiss(item.objectID)}
-                    type="button"
-                  >
-                    Dismiss
-                  </button>
-                </td>
-              </tr>
+              <ItemRow item={item} onDismiss={onDismiss} />
             )
           })}
         </tbody>
       </table>
     )
+  }
+}
+
+class ItemRow extends Component {
+  render() {
+    const { item, onDismiss } = this.props;
+    return (
+      <tr key={item.objectID}>
+        <td>
+          <a href={item.url}>{item.title}</a>
+        </td>
+        <td>{item.author}</td>
+        <td>{item.num_comments}</td>
+        <td>{item.points}</td>
+        <td>
+          <Button onClick={() => onDismiss(item.objectID)}>
+            Dismiss
+          </Button>
+        </td>
+      </tr>
+    );
+  }
+}
+
+class Button extends Component {
+  render() {
+    const {
+      onClick,
+      className = '',
+      children,
+    } = this.props;
+    return (
+      <button
+        onClick={onClick}
+        className={className}
+        type="button"
+      >
+        {children}
+      </button>
+    );
   }
 }
 
