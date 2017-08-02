@@ -2,59 +2,63 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-const list = [
-  {
-    title:         'React',
-    url:          'https://facebook.github.io/react',
-    author:       'Jordan Walke',
-    num_comments: 3,
-    points:       4,
-    objectID:     0
-  },
-  {
-    title:         'Vue',
-    url:          'https://vue.js',
-    author:       'Vue JS',
-    num_comments: 5,
-    points:       1,
-    objectID:     1
-  }
-]
-
-function isSearched(searchTerm) {
-  return function(item) {
-    return !searchTerm
-      || item.title.toLowerCase().includes(searchTerm.toLowerCase())
-      || item.author.toLowerCase().includes(searchTerm.toLowerCase());
-  }
-}
+const DEFAULT_QUERY = 'KSHHJ';
+const API_ROOT      = 'https://api.opendota.com/api';
+const ENDPOINT      = '/search'
+const PARAM         = '?q='
 
 class App extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      list: list,
-      searchTerm: ''
+      result: null,
+      searchTerm: DEFAULT_QUERY
     };
 
+    this.setSearchPlayers = this.setSearchPlayers.bind(this);
+    this.fetchSearchPlayers = this.fetchSearchPlayers.bind(this);
     this.onDismiss = this.onDismiss.bind(this);
     this.onSearchChange = this.onSearchChange.bind(this);
+    this.onSearchSubmit = this.onSearchSubmit.bind(this);
+  }
+
+  setSearchPlayers(result) {
+    this.setState({result});
+  }
+
+  fetchSearchPlayers(searchTerm) {
+    let request = `${API_ROOT}${ENDPOINT}${PARAM}${searchTerm}`;
+    fetch(request)
+      .then(response => response.json())
+      .then(result => this.setSearchPlayers(result))
+      .catch(e => e);
+  }
+
+  componentDidMount() {
+    const { searchTerm } = this.state;
+    this.fetchSearchPlayers(searchTerm);
   }
 
   onDismiss(id) {
-    const isNotId = item => item.objectID !== id;
-    const updatedList = this.state.list.filter(isNotId);
-    this.setState({ list: updatedList })
+    const isNotId = item => item.account_id !== id;
+    const updatedList = this.state.result.filter(isNotId);
+    this.setState({ result: updatedList })
   }
 
   onSearchChange(event) {
     this.setState({ searchTerm: event.target.value });
   }
 
+  onSearchSubmit(event) {
+    const { searchTerm } = this.state;
+    this.fetchSearchPlayers(searchTerm);
+    event.preventDefault();
+  }
+
   render() {
-    const message = "Road to learn React"
-    const { searchTerm, list } = this.state;
+    const message = "OpenDota Player Search"
+    const { searchTerm, result } = this.state;
     return (
       <div className="App">
         <div className="App-header">
@@ -66,67 +70,76 @@ class App extends Component {
             <Search
               value={searchTerm}
               onChange={this.onSearchChange}
+              onSubmit={this.onSearchSubmit}
             >
-              <p>Search:</p>
+              Search
             </Search>
           </div>
           <hr />
-          <Table
-            list={list}
-            pattern={searchTerm}
-            onDismiss={this.onDismiss}
-          />
+          {
+            result
+              ?
+              <Table
+                result={result}
+                onDismiss={this.onDismiss}
+              />
+              : null
+          }
         </div>
       </div>
     );
   }
 }
 
-const Search = ({ value, onChange, children }) => {
+const Search = ({ value, onChange, onSubmit, children }) => {
   return (
     <div>
-      {children}
-      <form>
+      <form onSubmit={onSubmit}>
         <input
           type="text"
           value={value}
           onChange={onChange}
         />
-      </form>
-    </div>
+        <Button className='button' onClick={onSubmit} children={children} />
+    </form>
+  </div>
   );
 }
 
-const Table = ({list, pattern, onDismiss}) => {
+const Table = ({result, onDismiss}) => {
   return (
     <div className="table">
       <div className="table-row table-header">
-        <span>Title</span>
-        <span>Author</span>
-        <span>Comments</span>
-        <span>Points</span>
+        <span>Avatar</span>
+        <span>Name</span>
+        <span>Last Match</span>
+        <span>Probability</span>
         <span></span>
       </div>
-      { list.filter(isSearched(pattern)).map( item => {
+      { result.map( player => {
         return (
-          <ItemRow item={item} onDismiss={onDismiss} />
+          <div key={player.account_id}>
+            <PlayerRow player={player} onDismiss={onDismiss} />
+          </div>
         )
       })}
     </div>
   );
 }
 
-const ItemRow = ({item, onDismiss}) => {
+const PlayerRow = ({player, onDismiss}) => {
   return (
-    <div className='table-row' key={item.objectID}>
+    <div className='table-row'>
       <span>
-        <a href={item.url}>{item.title}</a>
+        <a target="_blank" href={`https://www.opendota.com/players/${player.account_id}`}>
+          <img src={player.avatarfull} alt={player.personaname} width="30" height="30" />
+        </a>
       </span>
-      <span>{item.author}</span>
-      <span>{item.num_comments}</span>
-      <span>{item.points}</span>
+      <span>{player.personaname}</span>
+      <span>{player.last_match_time}</span>
+      <span>{player.similarity}</span>
       <span>
-        <Button className='button-inline' onClick={() => onDismiss(item.objectID)}>
+        <Button className='button-inline' onClick={() => onDismiss(player.account_id)}>
           Dismiss
         </Button>
       </span>
