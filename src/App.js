@@ -63,50 +63,75 @@ class App extends Component {
         </div>
         <div className="App-intro">
           <p>Search:</p>
-          <form>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={this.onSearchChange}
-            />
-          </form>
+          <Search
+            value={searchTerm}
+            onChange={this.onSearchChange}
+          />
           <hr />
-          <table>
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Author</th>
-                <th>Comments</th>
-                <th>Points</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              { list.filter(isSearched(searchTerm)).map( item => {
-                return (
-                  <tr key={item.objectID}>
-                    <td>
-                      <a href={item.url}>{item.title}</a>
-                    </td>
-                    <td>{item.author}</td>
-                    <td>{item.num_comments}</td>
-                    <td>{item.points}</td>
-                    <td>
-                      <button
-                        onClick={ () => this.onDismiss(item.objectID)}
-                        type="button"
-                      >
-                        Dismiss
-                      </button>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+          <Table
+            list={list}
+            pattern={searchTerm}
+            onDismiss={this.onDismiss}
+          />
         </div>
       </div>
     );
+  }
+}
+
+class Search extends Component {
+  render() {
+    const { value, onChange } = this.props;
+    return (
+      <form>
+        <input
+          type="text"
+          value={value}
+          onChange={onChange}
+        />
+      </form>
+    )
+  }
+}
+
+class Table extends Component {
+  render() {
+    const { list, pattern, onDismiss } = this.props;
+    return (
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Comments</th>
+            <th>Points</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          { list.filter(isSearched(pattern)).map( item => {
+            return (
+              <tr key={item.objectID}>
+                <td>
+                  <a href={item.url}>{item.title}</a>
+                </td>
+                <td>{item.author}</td>
+                <td>{item.num_comments}</td>
+                <td>{item.points}</td>
+                <td>
+                  <button
+                    onClick={ () => onDismiss(item.objectID)}
+                    type="button"
+                  >
+                    Dismiss
+                  </button>
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    )
   }
 }
 
