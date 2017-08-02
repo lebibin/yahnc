@@ -12,19 +12,40 @@ class App extends Component {
     super(props);
 
     this.state = {
-      result: null,
+      results: null,
+      searchKey: '',
       searchTerm: DEFAULT_QUERY
     };
 
     this.setSearchPlayers = this.setSearchPlayers.bind(this);
     this.fetchSearchPlayers = this.fetchSearchPlayers.bind(this);
+    this.shouldSearchPlayers = this.shouldSearchPlayers.bind(this);
     this.onDismiss = this.onDismiss.bind(this);
     this.onSearchChange = this.onSearchChange.bind(this);
     this.onSearchSubmit = this.onSearchSubmit.bind(this);
   }
 
+  shouldSearchPlayers(searchTerm) {
+    return !this.state.results[searchTerm];
+  }
+
   setSearchPlayers(result) {
-    this.setState({result});
+    const { searchKey, results } = this.state;
+    const oldResult = results && results[searchKey]
+      ? results[searchKey]
+      : [];
+
+    const updatedResult = [
+      ...oldResult,
+      ...result
+    ]
+
+    this.setState({
+      results: {
+        ...results,
+        [searchKey]: updatedResult
+      }
+    });
   }
 
   fetchSearchPlayers(searchTerm) {
@@ -37,13 +58,21 @@ class App extends Component {
 
   componentDidMount() {
     const { searchTerm } = this.state;
+    this.setState({ searchKey: searchTerm })
     this.fetchSearchPlayers(searchTerm);
   }
 
   onDismiss(id) {
+    const { searchKey, results } = this.state;
+    const playerList = results[searchKey];
     const isNotId = item => item.account_id !== id;
-    const updatedList = this.state.result.filter(isNotId);
-    this.setState({ result: updatedList })
+    const updatedList = playerList.filter(isNotId);
+    this.setState({ 
+      results: {
+        ...results,
+        [searchKey]: updatedList
+      }
+    })
   }
 
   onSearchChange(event) {
@@ -52,13 +81,20 @@ class App extends Component {
 
   onSearchSubmit(event) {
     const { searchTerm } = this.state;
-    this.fetchSearchPlayers(searchTerm);
+    this.setState({ searchKey: searchTerm })
+    if (this.shouldSearchPlayers(searchTerm)) {
+      this.fetchSearchPlayers(searchTerm);
+    }
     event.preventDefault();
   }
 
   render() {
     const message = "OpenDota Player Search"
-    const { searchTerm, result } = this.state;
+    const { searchTerm, results, searchKey } = this.state;
+    const playerList = (
+      results &&
+      results[searchKey]
+    ) || [];
     return (
       <div className="App">
         <div className="App-header">
@@ -77,10 +113,10 @@ class App extends Component {
           </div>
           <hr />
           {
-            result
+            playerList
               ?
               <Table
-                result={result}
+                result={playerList}
                 onDismiss={this.onDismiss}
               />
               : null
@@ -101,8 +137,8 @@ const Search = ({ value, onChange, onSubmit, children }) => {
           onChange={onChange}
         />
         <Button className='button' onClick={onSubmit} children={children} />
-    </form>
-  </div>
+      </form>
+    </div>
   );
 }
 
