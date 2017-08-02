@@ -53,7 +53,7 @@ class App extends Component {
   }
 
   render() {
-    const message = "Sup, b?"
+    const message = "Road to learn React"
     const { searchTerm, list } = this.state;
     return (
       <div className="App">
@@ -61,13 +61,15 @@ class App extends Component {
           <img className="App-logo" src={logo} alt="logo" />
           <h2>{message}</h2>
         </div>
-        <div className="App-intro">
-          <Search
-            value={searchTerm}
-            onChange={this.onSearchChange}
-          >
-            <p>Search:</p>
-          </Search>
+        <div className="page">
+          <div className="interactions">
+            <Search
+              value={searchTerm}
+              onChange={this.onSearchChange}
+            >
+              <p>Search:</p>
+            </Search>
+          </div>
           <hr />
           <Table
             list={list}
@@ -97,42 +99,38 @@ const Search = ({ value, onChange, children }) => {
 
 const Table = ({list, pattern, onDismiss}) => {
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>Title</th>
-          <th>Author</th>
-          <th>Comments</th>
-          <th>Points</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        { list.filter(isSearched(pattern)).map( item => {
-          return (
-            <ItemRow item={item} onDismiss={onDismiss} />
-          )
-        })}
-      </tbody>
-    </table>
+    <div className="table">
+      <div className="table-row table-header">
+        <span>Title</span>
+        <span>Author</span>
+        <span>Comments</span>
+        <span>Points</span>
+        <span></span>
+      </div>
+      { list.filter(isSearched(pattern)).map( item => {
+        return (
+          <ItemRow item={item} onDismiss={onDismiss} />
+        )
+      })}
+    </div>
   );
 }
 
 const ItemRow = ({item, onDismiss}) => {
   return (
-    <tr key={item.objectID}>
-      <td>
+    <div className='table-row' key={item.objectID}>
+      <span>
         <a href={item.url}>{item.title}</a>
-      </td>
-      <td>{item.author}</td>
-      <td>{item.num_comments}</td>
-      <td>{item.points}</td>
-      <td>
-        <Button onClick={() => onDismiss(item.objectID)}>
+      </span>
+      <span>{item.author}</span>
+      <span>{item.num_comments}</span>
+      <span>{item.points}</span>
+      <span>
+        <Button className='button-inline' onClick={() => onDismiss(item.objectID)}>
           Dismiss
         </Button>
-      </td>
-    </tr>
+      </span>
+    </div>
   );
 }
 
